@@ -102,6 +102,7 @@ class Experiment:
             gradb_class = gb.GPAFHDO
         self.gradb = gradb_class(grad_t, grad_channels, self.server_command, spi_freq)
         self.grad_channels = grad_channels
+        self.shims = np.zeros(grad_channels)
         
         self.acq_retry_limit = acq_retry_limit
 
@@ -207,6 +208,9 @@ class Experiment:
         self.tx_bytes[3::4] = (tx_q >> 8).astype(np.uint8).tobytes()
         self.tx_data_dirty = False
 
+    def set_shim_currents(self, shims):
+        self.shims = shims
+
     def compile_grad_data(self):
         """ go through the grad data and prepare binary array to send to the server """
         if not hasattr(self, 'grad_data'):
@@ -215,7 +219,7 @@ class Experiment:
         if self.grad_data[0].size == 0:
             self.grad_data = [np.array([0]) for k in range(self.grad_channels)]
 
-        grad_bram_data = self.gradb.float2bin(self.grad_data) # grad board-specific transformation
+        grad_bram_data = self.gradb.float2bin(self.grad_data, self.shims) # grad board-specific transformation
             
         self.grad_bytes = grad_bram_data.tobytes()
         self.grad_data_dirty = False

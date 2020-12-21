@@ -95,7 +95,8 @@ class OCRA1:
         # Fill more in here
         pass
 
-    def float2bin(self, grad_data):
+    def float2bin(self, grad_data, shims):
+        # TODO: implement shimming
         grad_bram_data = np.zeros(grad_data[0].size * self.grad_channels, dtype=np.uint32)
 
         for ch, gd in enumerate(grad_data):
@@ -197,7 +198,7 @@ class GPAFHDO:
 
     def ampere_to_dac_code(self, ampere):
         v_ref = 2.5
-        dac_code = int( (ampere / self.gpa_current_per_volt + v_ref)/5 * 0xffff)
+        dac_code = ( (np.float32(ampere) / self.gpa_current_per_volt + v_ref)/5 * 0xffff).astype(np.int)
         return dac_code    
 
     def calibrate(self,
@@ -242,12 +243,14 @@ class GPAFHDO:
                 plt.grid(True)
                 plt.show()    
 
-    def float2bin(self, grad_data):
+    def float2bin(self, grad_data, shims):
+        # grad_data is normalized to max current of the GPA
         grad_bram_data = np.zeros(grad_data[0].size * self.grad_channels, dtype=np.uint32)
 
         for ch, gd in enumerate(grad_data):
             # Not 2's complement - 0x0 word is ~0V (-10A), 0xffff is ~+5V (+10A)
             gr_dacbits = np.round(32767.49 * (gd + 1)).astype(np.uint32) & 0xffff
+            gr_dacbits_shims = self.ampere_to_dac_code(np.ones(gd.shape[0]))
             gr_dacbits_cal = self.calculate_corrected_dac_code(ch,gr_dacbits)                            
             gr = gr_dacbits_cal | 0x80000 | (ch << 16)
             
