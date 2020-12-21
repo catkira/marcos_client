@@ -43,9 +43,8 @@ if __name__ == "__main__":
         addresses_per_grad_sample=3,
         clk_t=clk_t,
         tx_t=tx_t,
-        grad_pad = 1,
-        pulseq_t_match=True,
-        adc_pad=70,
+        grad_pad = 10,
+        adc_pad=1,
         grad_t=grad_interval)
     tx_arr, grad_arr, cb, params = ps.assemble('test_gpa_fhdo.seq', byte_format=False)
 
@@ -77,8 +76,8 @@ if __name__ == "__main__":
         averages=4,
         plot=False)
 
-    current = 0.1 # ampere
-    # set all channels back to 0.1 A
+    current = 0.0 # ampere
+    # set all channels back to [current] A
     for ch in range(num_grad_channels):
         dac_code = exp.gradb.ampere_to_dac_code(current)
         dac_code = exp.gradb.calculate_corrected_dac_code(ch,dac_code)
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     wait = input('All gradient channels are set to {:f} A. Press Enter to continue.'.format(current))
 
     data = exp.run() # Comment out this line to avoid running on the hardware
-    wait = input('All gradient channels are set to shim current. Press Enter to continue.'.format(current))
+    #wait = input('All gradient channels are set to shim current. Press Enter to continue.'.format(current))
 
     # set all channels back to 0 A
     for ch in range(num_grad_channels):
