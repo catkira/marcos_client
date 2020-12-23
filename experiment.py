@@ -258,7 +258,7 @@ class Experiment:
             'acq_rlim': self.acq_retry_limit,
             'acq': self.samples})
         
-        return np.frombuffer(reply[4]['acq'], np.complex64), status
+        return np.frombuffer(reply[4]['acq'], np.uint64), status
 
 def test_Experiment():
     exp = Experiment(samples=500)

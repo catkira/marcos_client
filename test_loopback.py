@@ -7,8 +7,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pdb, sys
 import experiment as ex
+import scipy.signal as signal
 from pulseq_assembler import PSAssembler
 st = pdb.set_trace
+
+def to_float(x,e):
+    c = x.astype(np.uint32)&0x3FFFFFF
+    sign = 1 
+    if ((x.astype(np.uint32)>> e) & 1) != 0:
+        # convert back from two's complement
+        c = x - 1 
+        c = ~c.astype(np.uint32)
+        sign = -1
+    f = (1.0 * c.astype(np.float64)) / (2 ** e)
+    f = f * sign
+    return f
 
 if __name__ == "__main__":
     lo_freq = 2.1 # MHz
@@ -18,7 +31,7 @@ if __name__ == "__main__":
     grad_interval = 10.003 # us between [num_grad_channels] channel updates
 
     do_single_test = True
-    do_jitter_test = False
+    do_jitter_test = True
 
     if len(sys.argv) > 1 and "jitter" in sys.argv:
         do_jitter_test = True
@@ -59,7 +72,7 @@ if __name__ == "__main__":
                      addresses_per_grad_sample=3)
     tx_arr, grad_arr, cb, params = ps.assemble('../ocra-pulseq/test_files/test_loopback.seq', byte_format=False)
     
-    exp = ex.Experiment(samples=params['readout_number'], # TODO: get information from PSAssembler
+    exp = ex.Experiment(samples=int(params['readout_number']*2), # TODO: get information from PSAssembler
                         lo_freq=lo_freq,
                         tx_t=tx_t,
                         rx_t=params['rx_t'],
@@ -82,11 +95,21 @@ if __name__ == "__main__":
         
     if do_jitter_test:
         data = []
-        trials = 1000
+        databytes = []
+        trials = 100
         for k in range(trials):
             d, s = exp.run()
             # TODO: retake when warnings occur due to timeouts etc
             data.append( d ) # Comment out this line to avoid running on the hardware
+            databytes2 = np.frombuffer(d.tobytes(),dtype='uint8')
+            databytes3 = databytes2.reshape(int(np.round(databytes2.shape[0]/4)),4)
+            databytes4 = (databytes3[:,3].astype('uint32')<<24) +(databytes3[:,2].astype('uint32')<<16) + (databytes3[:,1].astype('uint32')<<8) + (databytes3[:,0].astype('uint32'))
+            databytes5 = np.zeros(databytes4.shape[0]).astype(np.uint32)
+            databytes6 = np.zeros(databytes4.shape[0]).astype(np.float64) 
+            for n in range(databytes4.shape[0]):
+                databytes6[n] = to_float(databytes4[n],26)
+            databytes6=signal.decimate(databytes6[0::2],2,ftype='fir') + 1j*signal.decimate(databytes6[1::2],2,ftype='fir')
+            databytes.append(databytes6)
         
         taxis = np.arange(params['readout_number'])*params['rx_t']
         plt.figure(figsize=(10,9))
@@ -94,7 +117,7 @@ if __name__ == "__main__":
         good_data = []
         bad_data = []
 
-        for d in data:
+        for d in databytes:
             if np.abs(d[-1]) == 0.0:
                 bad_data.append(d)
             else:
