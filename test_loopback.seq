@@ -31,7 +31,7 @@ Test 2
 # id num dwell delay freq phase
 # ..  ..    ns    us   Hz   rad
 [ADC]
-1 300 497 0 0 0 # second ramp starts at t=196
+1 600 490 0 0 0 # second ramp starts at t=196
 # 1 150 994 0 0 0 # second ramp s
 # 1 75 2002 0 0 0
 

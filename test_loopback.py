@@ -11,22 +11,11 @@ import scipy.signal as signal
 from pulseq_assembler import PSAssembler
 st = pdb.set_trace
 
-def to_float(x,e):
-    c = x.astype(np.uint32)&0x3FFFFFF
-    sign = 1 
-    if ((x.astype(np.uint32)>> e) & 1) != 0:
-        # convert back from two's complement
-        c = x - 1 
-        c = ~c.astype(np.uint32)
-        sign = -1
-    f = (1.0 * c.astype(np.float64)) / (2 ** e)
-    f = f * sign
-    return f
 
 if __name__ == "__main__":
     lo_freq = 2.1 # MHz
     tx_t = 1.001 # us
-    clk_t = 0.007 # ocra system clk for tx and gradients -- rx system clk depends on RP/STEMlab model
+    clk_t = 0.008138 # ocra system clk for tx and gradients -- rx system clk depends on RP/STEMlab model
     num_grad_channels = 3
     grad_interval = 10.003 # us between [num_grad_channels] channel updates
 
@@ -56,11 +45,11 @@ if __name__ == "__main__":
 
     # factor used to normalise RF amplitude, should be max value in system used!
     # (I.e. if unknown, lower values will create larger RF signals, since ocra-pulseq normalises its outputs to this value)
-    rf_amp_max = 16
+    rf_amp_max = 2
 
     # as above - for GPA boards, should represent full-scale voltage (or current, if that's being measured)
     # ocra-pulseq normalises its outputs to this value
-    grad_max = 10
+    grad_max = 100
 
     ps = PSAssembler(rf_center=lo_freq*1e6,
                      rf_amp_max=rf_amp_max,
@@ -70,9 +59,9 @@ if __name__ == "__main__":
                      grad_t=grad_interval,
                      grad_pad=2,
                      addresses_per_grad_sample=3)
-    tx_arr, grad_arr, cb, params = ps.assemble('../ocra-pulseq/test_files/test_loopback.seq', byte_format=False)
+    tx_arr, grad_arr, cb, params = ps.assemble('test_loopback.seq', byte_format=False)
     
-    exp = ex.Experiment(samples=int(params['readout_number']*2), # TODO: get information from PSAssembler
+    exp = ex.Experiment(samples=int(params['readout_number']), # TODO: get information from PSAssembler
                         lo_freq=lo_freq,
                         tx_t=tx_t,
                         rx_t=params['rx_t'],
@@ -96,7 +85,7 @@ if __name__ == "__main__":
     if do_jitter_test:
         data = []
         databytes = []
-        trials = 100
+        trials = 1000
         for k in range(trials):
             d, s = exp.run()
             # TODO: retake when warnings occur due to timeouts etc
@@ -104,14 +93,11 @@ if __name__ == "__main__":
             databytes2 = np.frombuffer(d.tobytes(),dtype='uint8')
             databytes3 = databytes2.reshape(int(np.round(databytes2.shape[0]/4)),4)
             databytes4 = (databytes3[:,3].astype('uint32')<<24) +(databytes3[:,2].astype('uint32')<<16) + (databytes3[:,1].astype('uint32')<<8) + (databytes3[:,0].astype('uint32'))
-            databytes5 = np.zeros(databytes4.shape[0]).astype(np.uint32)
-            databytes6 = np.zeros(databytes4.shape[0]).astype(np.float64) 
-            for n in range(databytes4.shape[0]):
-                databytes6[n] = to_float(databytes4[n],26)
-            databytes6=signal.decimate(databytes6[0::2],2,ftype='fir') + 1j*signal.decimate(databytes6[1::2],2,ftype='fir')
-            databytes.append(databytes6)
+            databytes6 = np.float64(databytes4[:].astype(np.int32))/(2**31)
+            databytes7=signal.decimate(databytes6[0::2],2,ftype='fir') + 1j*signal.decimate(databytes6[1::2],2,ftype='fir')
+            databytes.append(databytes7)
         
-        taxis = np.arange(params['readout_number'])*params['rx_t']
+        taxis = np.arange(params['readout_number']/2)#*params['rx_t']
         plt.figure(figsize=(10,9))
 
         good_data = []
@@ -128,14 +114,14 @@ if __name__ == "__main__":
                 
         plt.subplot(2,1,1)
         for d in good_data:
-            plt.plot(taxis, d.real )
+            plt.plot(taxis, abs(d))
         plt.ylabel('loopback rx amplitude')
         plt.title('passing loopback data ({:d}/{:d}, {:.2f}%)'.format(lgd, lgd+lbd, 100*lgd/(lgd+lbd)))
         plt.grid(True)
 
         plt.subplot(2,1,2)
         for d in bad_data:
-            plt.plot(taxis, d.real )
+            plt.plot(taxis, abs(d))
         plt.ylabel('loopback rx amplitude')
         plt.title('failing loopback data ({:d}/{:d}, {:.2f}%)'.format(lbd, lgd+lbd, 100*lbd/(lgd+lbd)))
         plt.grid(True)        
