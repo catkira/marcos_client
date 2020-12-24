@@ -76,7 +76,7 @@ if __name__ == "__main__":
         averages=4,
         plot=False)
 
-    current = 0.0 # ampere
+    current = 0.5 # ampere
     # set all channels back to [current] A
     for ch in range(num_grad_channels):
         dac_code = exp.gradb.ampere_to_dac_code(current)

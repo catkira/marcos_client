@@ -186,7 +186,7 @@ class GPAFHDO:
         r_shunt = 0.2
         adc_voltage = gpa_current*r_shunt+v_ref
         adc_gain = 4.096*1.25   # ADC range register setting has to match this
-        adc_code = np.round(adc_voltage/adc_gain * 0xffff/2).astype(np.int)
+        adc_code = np.round(adc_voltage/adc_gain * 0xffff).astype(np.int)
         #print('DAC code {:d}, DAC voltage {:f}, GPA current {:f}, ADC voltage {:f}, ADC code {:d}'.format(dac_code,dac_voltage,gpa_current,adc_voltage,adc_code))
         return adc_code
 
@@ -227,7 +227,7 @@ class GPAFHDO:
                 
                 self.read_adc(channel) # dummy read
                 for m in range(averages): 
-                    adc_values[k][m] = self.read_adc(channel)/2 # TODO: why /2 here???
+                    adc_values[k][m] = self.read_adc(channel)
                 self.gpaCalValues[channel][k] = adc_values.sum(1)[k]/averages
                 gpaCalRatios[k] = self.gpaCalValues[channel][k]/self.expected_adc_code_from_dac_code(dv)
                 #print('Received ADC code {:d} -> expected ADC code {:d}'.format(int(adc_values.sum(1)[k]/averages),self.expected_adc_code_from_dac_code(dv)))
