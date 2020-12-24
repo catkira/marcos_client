@@ -227,7 +227,7 @@ class GPAFHDO:
                 
                 self.read_adc(channel) # dummy read
                 for m in range(averages): 
-                    adc_values[k][m] = self.read_adc(channel)
+                    adc_values[k][m] = self.read_adc(channel)/2 # TODO: why /2 here???
                 self.gpaCalValues[channel][k] = adc_values.sum(1)[k]/averages
                 gpaCalRatios[k] = self.gpaCalValues[channel][k]/self.expected_adc_code_from_dac_code(dv)
                 #print('Received ADC code {:d} -> expected ADC code {:d}'.format(int(adc_values.sum(1)[k]/averages),self.expected_adc_code_from_dac_code(dv)))

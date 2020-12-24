@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     exp.gradb.init_hw()
     exp.set_shim_currents(np.array([0,0,0,0]))
-    plt.plot(grad_arr[0]);plt.show()
+    #plt.plot(grad_arr[0]);plt.show()
 
     exp.gradb.calibrate(max_current = 2,
         num_calibration_points=10,
