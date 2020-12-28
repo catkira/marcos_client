@@ -88,7 +88,6 @@ if __name__ == "__main__":
         trials = 1000
         for k in range(trials):
             d, s = exp.run()
-            # TODO: retake when warnings occur due to timeouts etc
             data.append( d ) # Comment out this line to avoid running on the hardware
             databytes2 = np.frombuffer(d.tobytes(),dtype='uint8')
             databytes3 = databytes2.reshape(int(np.round(databytes2.shape[0]/4)),4)
