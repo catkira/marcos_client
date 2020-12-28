@@ -60,8 +60,11 @@ if __name__ == "__main__":
                      grad_pad=2,
                      addresses_per_grad_sample=3)
     tx_arr, grad_arr, cb, params = ps.assemble('test_loopback.seq', byte_format=False)
+
+    t,arr = ps.sequence()
+    plt.plot(t,np.transpose(arr));plt.show()
     
-    exp = ex.Experiment(samples=int(params['readout_number']), # TODO: get information from PSAssembler
+    exp = ex.Experiment(samples=int(params['readout_number']*2), # needs factor 2 because halfband fir has been removed from hdl
                         lo_freq=lo_freq,
                         tx_t=tx_t,
                         rx_t=params['rx_t'],
@@ -85,7 +88,7 @@ if __name__ == "__main__":
     if do_jitter_test:
         data = []
         databytes = []
-        trials = 1000
+        trials = 100
         for k in range(trials):
             d, s = exp.run()
             data.append( d ) # Comment out this line to avoid running on the hardware
@@ -96,7 +99,7 @@ if __name__ == "__main__":
             databytes7=signal.decimate(databytes6[0::2],2,ftype='fir') + 1j*signal.decimate(databytes6[1::2],2,ftype='fir')
             databytes.append(databytes7)
         
-        taxis = np.arange(params['readout_number']/2)#*params['rx_t']
+        taxis = np.arange(params['readout_number'])#*params['rx_t']
         plt.figure(figsize=(10,9))
 
         good_data = []

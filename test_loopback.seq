@@ -32,7 +32,7 @@ Test 2
 # id num dwell delay freq phase
 # ..  ..    ns    us   Hz   rad
 [ADC]
-1 600 250 0 0 0 # second ramp starts at t=196
+1 300 500 0 0 0 # second ramp starts at t=196
 
 # id amp shape_id delay
 [GRADIENTS]
