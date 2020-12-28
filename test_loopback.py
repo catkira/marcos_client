@@ -14,7 +14,7 @@ st = pdb.set_trace
 
 if __name__ == "__main__":
     lo_freq = 2.1 # MHz
-    tx_t = 1.001 # us
+    tx_t = 1 # us
     clk_t = 0.008138 # ocra system clk for tx and gradients -- rx system clk depends on RP/STEMlab model
     num_grad_channels = 3
     grad_interval = 10.003 # us between [num_grad_channels] channel updates
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     if do_jitter_test:
         data = []
         databytes = []
-        trials = 1000
+        trials = 100
         for k in range(trials):
             d, s = exp.run()
             if 'warnings' in s:
