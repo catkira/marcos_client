@@ -88,12 +88,15 @@ if __name__ == "__main__":
         trials = 1000
         for k in range(trials):
             d, s = exp.run()
+            if 'warnings' in s:
+                continue
+
             # TODO: retake when warnings occur due to timeouts etc
             data.append( d ) # Comment out this line to avoid running on the hardware
             databytes2 = np.frombuffer(d.tobytes(),dtype='uint8')
             databytes3 = databytes2.reshape(int(np.round(databytes2.shape[0]/4)),4)
             databytes4 = (databytes3[:,3].astype('uint32')<<24) +(databytes3[:,2].astype('uint32')<<16) + (databytes3[:,1].astype('uint32')<<8) + (databytes3[:,0].astype('uint32'))
-            databytes6 = np.float64(databytes4[:].astype(np.int32))/(2**31)
+            databytes6 = np.float64(databytes4[:].astype(np.int32))/(2**30)
             databytes7=signal.decimate(databytes6[0::2],2,ftype='fir') + 1j*signal.decimate(databytes6[1::2],2,ftype='fir')
             databytes.append(databytes7)
         
