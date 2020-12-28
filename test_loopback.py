@@ -85,12 +85,9 @@ if __name__ == "__main__":
     if do_jitter_test:
         data = []
         databytes = []
-        trials = 100
+        trials = 1000
         for k in range(trials):
             d, s = exp.run()
-            if 'warnings' in s:
-                continue
-
             # TODO: retake when warnings occur due to timeouts etc
             data.append( d ) # Comment out this line to avoid running on the hardware
             databytes2 = np.frombuffer(d.tobytes(),dtype='uint8')

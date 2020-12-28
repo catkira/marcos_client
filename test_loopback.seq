@@ -18,6 +18,7 @@ Test 2
 2  0  1   0   0   0  1  0
 3  4  0   0   0   0  0  0
 4  0  2   0   0   0  1  0
+5  4  0   0   0   0  0  0  # delay is needed to wait until data transfer is finished
 
 # Format of RF events:
 # id amplitude mag_id phase_id delay freq phase
@@ -31,7 +32,7 @@ Test 2
 # id num dwell delay freq phase
 # ..  ..    ns    us   Hz   rad
 [ADC]
-1 600 500 0 0 0 # second ramp starts at t=196
+1 600 250 0 0 0 # second ramp starts at t=196
 
 # id amp shape_id delay
 [GRADIENTS]
