@@ -317,9 +317,10 @@ def loopback():
     lo_freq3 = 1.5
     lo_amp = 100 # percent
 
-    cic0_decimation = 4
-    cic1_decimation = 7
-    dds_demod_ch = 1
+    cic0_decimation = 10
+    cic1_decimation = 14
+    dds_demod_ch_rx0 = 1
+    dds_demod_ch_rx1 = 1
 
     extra_time = 20
 
@@ -352,15 +353,15 @@ def loopback():
     raw_data[addr] = instb(RX0_CTRL, 0, 0x0000); addr += 1
     # raw_data[addr] = instb(RX1_CTRL, 0, 0x0000); addr += 1
     # take them out of reset later
-    raw_data[addr] = instb(RX0_CTRL, 40, 0x8000 | cic0_decimation | (dds_demod_ch << 12) ); addr += 1
-    raw_data[addr] = instb(RX1_CTRL, 39, 0x8000 | cic1_decimation | (dds_demod_ch << 12) ); addr += 1    
+    raw_data[addr] = instb(RX0_CTRL, 40, 0x8000 | cic0_decimation | (dds_demod_ch_rx0 << 12) ); addr += 1
+    raw_data[addr] = instb(RX1_CTRL, 39, 0x8000 | cic1_decimation | (dds_demod_ch_rx1 << 12) ); addr += 1    
     # briefly signal that there's a new rate
-    raw_data[addr] = instb(RX0_CTRL, 40, 0xc000 | cic0_decimation | (dds_demod_ch << 12) ); addr += 1
-    raw_data[addr] = instb(RX1_CTRL, 40, 0xc000 | cic1_decimation | (dds_demod_ch << 12) ); addr += 1    
+    raw_data[addr] = instb(RX0_CTRL, 40, 0xc000 | cic0_decimation | (dds_demod_ch_rx0 << 12) ); addr += 1
+    raw_data[addr] = instb(RX1_CTRL, 40, 0xc000 | cic1_decimation | (dds_demod_ch_rx1 << 12) ); addr += 1    
     # raw_data[addr] = instb(RX1_CTRL, 49, 0xf000 | cic_decimation); addr += 1
     # end the new rate flag (the buffers are not empty so no offset time is needed)
-    raw_data[addr] = instb(RX0_CTRL, 0, 0x8000 | cic0_decimation | (dds_demod_ch << 12) ); addr += 1 # decimation may not be needed here
-    raw_data[addr] = instb(RX1_CTRL, 0, 0x8000 | cic1_decimation | (dds_demod_ch << 12) ); addr += 1    
+    raw_data[addr] = instb(RX0_CTRL, 0, 0x8000 | cic0_decimation | (dds_demod_ch_rx0 << 12) ); addr += 1 # decimation may not be needed here
+    raw_data[addr] = instb(RX1_CTRL, 0, 0x8000 | cic1_decimation | (dds_demod_ch_rx1 << 12) ); addr += 1    
     # raw_data[addr] = instb(RX1_CTRL, 0, 0xb000 | cic_decimation); addr += 1    
     
     steps = 300
@@ -556,10 +557,13 @@ if __name__ == "__main__":
     # run_test(rx_short(), interval=0.01, timeout=20)
 
     if False:
+        res = run_streaming_test(leds())
+
+    if False:
         data = long_loopback()
         st()
         
-    if True:
+    if False:
         # clear mem
         
         res = run_streaming_test(example_tr_loop())
@@ -581,18 +585,19 @@ if __name__ == "__main__":
 
         plt.show()
         
-    if False:
+    if True:
         # clear mem
         
-        res = run_streaming_test(long_loopback())
+        # res = run_streaming_test(long_loopback())
+        res = run_streaming_test(loopback())
 
         rxd = res[4]['run_seq']
         # offsets = 1e8
         offsets = 0
-        rx0_i = np.array(rxd['rx0_i'], dtype=np.int32)
-        rx0_q = np.array(rxd['rx0_q'], dtype=np.int32)+offsets
-        rx1_i = np.array(rxd['rx1_i'], dtype=np.int32)+2*offsets
-        rx1_q = np.array(rxd['rx1_q'], dtype=np.int32)+3*offsets
+        rx0_i = np.array(np.array(rxd['rx0_i']), dtype=np.int32)
+        rx0_q = np.array(np.array(rxd['rx0_q']), dtype=np.int32)+offsets
+        rx1_i = np.array(np.array(rxd['rx1_i']), dtype=np.int32)+2*offsets
+        rx1_q = np.array(np.array(rxd['rx1_q']), dtype=np.int32)+3*offsets
         plt.plot(rx0_i)
         plt.plot(rx0_q)
         plt.plot(rx1_i)
