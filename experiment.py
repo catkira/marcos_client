@@ -82,7 +82,7 @@ class Experiment:
         self._close_socket = True
         if prev_socket is None:
             self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._s.connect( (ip_address, port) )
+            # self._s.connect( (ip_address, port) )
         else:
             self._s = prev_socket
             self._close_socket = False # do not close previous socket
