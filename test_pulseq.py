@@ -60,6 +60,7 @@ if __name__ == "__main__":
                      )
     #tx_arr, grad_arr, cb, params = psi.interpret('../ocra-pulseq/test_files/test_loopback.seq')
     od, pd = psi.interpret('mtse_3d_pypulseq.seq')
+    # od, pd = psi.interpret('mtse_3d_pypulseq_no_tid.seq')
     print('parsing done')
     
     exp = ex.Experiment(lo_freq=lo_freq,
